@@ -240,16 +240,23 @@ export const PortalSettingsView: React.FC = () => {
               
               <div className="space-y-1.5 font-mono text-[10px]">
                 <div className="p-2 bg-slate-100 dark:bg-slate-950 rounded border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300">
-                  <div className="text-[9px] font-sans text-slate-400 font-bold">Development Redirect URI:</div>
-                  <div className="select-all break-all text-blue-600 dark:text-blue-400 font-bold">
-                    https://ais-dev-w3epycmkch54ybqskto42g-9009902503.asia-southeast1.run.app/api/v1/auth/github/callback
+                  <div className="text-[9px] font-sans text-slate-400 font-bold">Active Current Host Redirect URI:</div>
+                  <div className="select-all break-all text-emerald-600 dark:text-emerald-400 font-bold">
+                    {window.location.origin}/api/v1/auth/github/callback
                   </div>
                 </div>
 
                 <div className="p-2 bg-slate-100 dark:bg-slate-950 rounded border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300">
-                  <div className="text-[9px] font-sans text-slate-400 font-bold">Shared / Production Redirect URI:</div>
+                  <div className="text-[9px] font-sans text-slate-400 font-bold">Shared / Publish App Redirect URI:</div>
                   <div className="select-all break-all text-indigo-600 dark:text-indigo-400 font-bold">
-                    https://ais-pre-w3epycmkch54ybqskto42g-9009902503.asia-southeast1.run.app/api/v1/auth/github/callback
+                    https://ais-pre-k4w35jyvnwrt25kbn6ydlk-9009902503.asia-southeast1.run.app/api/v1/auth/github/callback
+                  </div>
+                </div>
+
+                <div className="p-2 bg-slate-100 dark:bg-slate-950 rounded border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300">
+                  <div className="text-[9px] font-sans text-slate-400 font-bold">Development Redirect URI:</div>
+                  <div className="select-all break-all text-blue-600 dark:text-blue-400 font-bold">
+                    https://ais-dev-k4w35jyvnwrt25kbn6ydlk-9009902503.asia-southeast1.run.app/api/v1/auth/github/callback
                   </div>
                 </div>
               </div>

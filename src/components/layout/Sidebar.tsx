@@ -23,7 +23,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate, isOpe
   const allowedMenus = menus.filter(m => {
     if (!m.isActive) return false;
     if (!m.requiredRole || m.requiredRole.length === 0) return true;
-    if (!user) return true; // Keep visible for visitors so they can explore links
+    if (!user) return false;
     return m.requiredRole.includes(user.role);
   });
 
@@ -106,59 +106,82 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentPath, onNavigate, isOpe
         </div>
       )}
 
-      {/* Dynamic Navigation Menu Items */}
+      {/* Navigation Menu Items */}
       <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1">
-        <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-          MENU UTAMA (DATABASE DRIVEN)
-        </div>
+        {!user ? (
+          /* Visitor Mode Navigation: Show only Dashboard Utama button */
+          <button
+            onClick={() => onNavigate('/dashboard')}
+            className={`w-full px-3 py-2.5 rounded-lg text-xs font-medium flex items-center justify-between transition ${
+              currentPath === '/dashboard'
+                ? 'bg-blue-600 text-white shadow-md font-semibold'
+                : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <Icons.LayoutDashboard className="w-4 h-4 text-blue-400" />
+              <span>Dashboard Utama</span>
+            </div>
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded uppercase bg-amber-950 text-amber-300 border border-amber-800">
+              Publik
+            </span>
+          </button>
+        ) : (
+          /* Logged In Navigation: Dynamic Database Driven Menu */
+          <>
+            <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              MENU UTAMA (DATABASE DRIVEN)
+            </div>
 
-        {allowedMenus.map((menu: MenuItem) => {
-          const isActive = currentPath === menu.path || currentPath.startsWith(`${menu.path}/`);
+            {allowedMenus.map((menu: MenuItem) => {
+              const isActive = currentPath === menu.path || currentPath.startsWith(`${menu.path}/`);
 
-          return (
-            <button
-              key={menu.id}
-              onClick={() => {
-                if (menu.targetModule === 'stock' || menu.path === '/stock' || menu.path.includes('stock')) {
-                  window.open('https://stock-opname-dapur-sppg.ai.studio/', '_blank');
-                } else if (menu.targetModule === 'esurat' || menu.path === '/esurat' || menu.path.includes('esurat')) {
-                  window.open('https://e-surat-digital-1.ai.studio', '_blank');
-                } else {
-                  onNavigate(menu.path);
-                }
-              }}
-              className={`w-full px-3 py-2.5 rounded-lg text-xs font-medium flex items-center justify-between transition group ${
-                isActive
-                  ? 'bg-blue-600 text-white shadow-md font-semibold'
-                  : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <span style={{ color: isActive ? '#FFFFFF' : menu.color }}>
-                  {renderIcon(menu.icon, 'w-4 h-4')}
-                </span>
-                <span>{menu.title}</span>
-              </div>
+              return (
+                <button
+                  key={menu.id}
+                  onClick={() => {
+                    if (menu.targetModule === 'stock' || menu.path === '/stock' || menu.path.includes('stock')) {
+                      window.open('https://stock-opname-dapur-sppg.ai.studio/', '_blank');
+                    } else if (menu.targetModule === 'esurat' || menu.path === '/esurat' || menu.path.includes('esurat')) {
+                      window.open('https://e-surat-digital-1.ai.studio', '_blank');
+                    } else {
+                      onNavigate(menu.path);
+                    }
+                  }}
+                  className={`w-full px-3 py-2.5 rounded-lg text-xs font-medium flex items-center justify-between transition group ${
+                    isActive
+                      ? 'bg-blue-600 text-white shadow-md font-semibold'
+                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <span style={{ color: isActive ? '#FFFFFF' : menu.color }}>
+                      {renderIcon(menu.icon, 'w-4 h-4')}
+                    </span>
+                    <span>{menu.title}</span>
+                  </div>
 
-              {/* Module Tag Badges */}
-              {menu.targetModule === 'esurat' && (
-                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase ${
-                  isActive ? 'bg-white/20 text-white' : 'bg-emerald-950 text-emerald-300 border border-emerald-800'
-                }`}>
-                  e-Surat
-                </span>
-              )}
+                  {/* Module Tag Badges */}
+                  {menu.targetModule === 'esurat' && (
+                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase ${
+                      isActive ? 'bg-white/20 text-white' : 'bg-emerald-950 text-emerald-300 border border-emerald-800'
+                    }`}>
+                      e-Surat
+                    </span>
+                  )}
 
-              {menu.targetModule === 'stock' && (
-                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase ${
-                  isActive ? 'bg-white/20 text-white' : 'bg-amber-950 text-amber-300 border border-amber-800'
-                }`}>
-                  Stock
-                </span>
-              )}
-            </button>
-          );
-        })}
+                  {menu.targetModule === 'stock' && (
+                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase ${
+                      isActive ? 'bg-white/20 text-white' : 'bg-amber-950 text-amber-300 border border-amber-800'
+                    }`}>
+                      Stock
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </>
+        )}
       </div>
 
       {/* Footer System Status */}
