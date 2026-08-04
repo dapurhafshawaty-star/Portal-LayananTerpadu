@@ -11,7 +11,7 @@ router.get('/', (req: Request, res: Response): void => {
 
 // Create user
 router.post('/', (req: Request, res: Response): void => {
-  const { nama, username, email, role, divisi, jabatan, status, foto } = req.body;
+  const { nama, username, email, role, divisi, jabatan, status, foto, password } = req.body;
 
   if (!nama || !username || !email || !role) {
     res.status(400).json({ success: false, message: 'Nama, Username, Email, dan Role wajib diisi.' });
@@ -33,14 +33,15 @@ router.post('/', (req: Request, res: Response): void => {
     divisi: divisi || 'Sekretariat / Tata Usaha',
     jabatan: jabatan || 'Staf Operasional',
     status: status || 'Aktif',
+    password: password || 'password123',
     foto: foto || `https://images.unsplash.com/photo-${1534528741775 + dbStore.users.length}?w=150`,
     createdAt: new Date().toISOString()
   };
 
   dbStore.users.unshift(newUser);
-  dbStore.addLog('ADMIN', 'System Administrator', 'Master User', 'Tambah User Baru', `Menambahkan user '${nama}' dengan role '${role}'`, req.ip);
+  dbStore.addLog('ADMIN', 'System Administrator', 'Master User', 'Tambah User Baru', `Menambahkan user '${nama}' dengan role '${role}' dan password kustom`, req.ip);
 
-  res.status(201).json({ success: true, message: 'User berhasil ditambahkan', data: newUser });
+  res.status(201).json({ success: true, message: 'User berhasil ditambahkan dengan password SSO', data: newUser });
 });
 
 // Update user
@@ -53,14 +54,42 @@ router.put('/:id', (req: Request, res: Response): void => {
     return;
   }
 
+  const updateData = { ...req.body };
+  // If password is blank in updateData, do not overwrite existing password
+  if (!updateData.password || updateData.password.trim() === '') {
+    delete updateData.password;
+  }
+
   dbStore.users[index] = {
     ...dbStore.users[index],
-    ...req.body
+    ...updateData
   };
 
-  dbStore.addLog('ADMIN', 'System Administrator', 'Master User', 'Update User Data', `Memperbarui data user ID ${id}`, req.ip);
+  dbStore.addLog('ADMIN', 'System Administrator', 'Master User', 'Update User Data', `Memperbarui data/password user ID ${id}`, req.ip);
 
   res.json({ success: true, message: 'Data user berhasil diperbarui', data: dbStore.users[index] });
+});
+
+// Reset Password endpoint
+router.post('/:id/reset-password', (req: Request, res: Response): void => {
+  const { id } = req.params;
+  const { newPassword } = req.body;
+
+  if (!newPassword || newPassword.trim().length < 6) {
+    res.status(400).json({ success: false, message: 'Password baru minimal 6 karakter.' });
+    return;
+  }
+
+  const user = dbStore.users.find(u => u.id === id);
+  if (!user) {
+    res.status(404).json({ success: false, message: 'User tidak ditemukan.' });
+    return;
+  }
+
+  user.password = newPassword.trim();
+  dbStore.addLog('ADMIN', 'System Administrator', 'Master User', 'Reset Password User', `Mereset password SSO untuk user '${user.nama}' (@${user.username})`, req.ip);
+
+  res.json({ success: true, message: `Password SSO user ${user.nama} berhasil direset.` });
 });
 
 // Delete user

@@ -23,6 +23,7 @@ export interface User {
   divisi: string;
   jabatan: string;
   status: 'Aktif' | 'Nonaktif';
+  password?: string;
   foto?: string;
   lastLogin?: string;
   createdAt: string;

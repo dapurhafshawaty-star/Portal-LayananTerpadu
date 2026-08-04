@@ -29,8 +29,10 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Passwords in mock mode accept 'password123' or username as default password
-    const isPasswordValid = password === 'password123' || password === username || password.length >= 6;
+    // Validate password against user.password in dbStore
+    const isPasswordValid = user.password
+      ? password === user.password
+      : password === 'password123' || password === user.username;
 
     if (!isPasswordValid) {
       dbStore.addLog(user.id, user.nama, 'SSO & Auth', 'Gagal Login Password', 'Kata sandi yang dimasukkan salah.', req.ip, 'Gagal');

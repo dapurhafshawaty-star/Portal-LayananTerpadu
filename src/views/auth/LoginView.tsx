@@ -1,17 +1,12 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { KeyRound, ShieldCheck, LogIn, Fuel, Mail, ArrowLeft, Eye } from 'lucide-react';
-import { UserRole } from '../../types';
+import { ShieldCheck, LogIn } from 'lucide-react';
 import logoImg from '../../assets/images/badan_gizi_logo_1785799692960.jpg';
 
-interface LoginViewProps {
-  onBackToVisitor?: () => void;
-}
-
-export const LoginView: React.FC<LoginViewProps> = ({ onBackToVisitor }) => {
+export const LoginView: React.FC = () => {
   const { login } = useAuth();
-  const [usernameOrEmail, setUsernameOrEmail] = useState('dapurhafshawaty@gmail.com');
-  const [password, setPassword] = useState('password123');
+  const [usernameOrEmail, setUsernameOrEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -22,20 +17,13 @@ export const LoginView: React.FC<LoginViewProps> = ({ onBackToVisitor }) => {
     try {
       const success = await login(usernameOrEmail, password);
       if (!success) {
-        setError('Email/Username atau password tidak terdaftar');
+        setError('Email/Username atau password tidak sesuai.');
       }
     } catch (err) {
-      setError('Gagal menghubungi server autentikasi SSO');
+      setError('Gagal menghubungi server autentikasi SSO.');
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleQuickLogin = async (userRole: UserRole, userIdentity: string) => {
-    setLoading(true);
-    setError('');
-    await login(userIdentity, 'password123');
-    setLoading(false);
   };
 
   const handleGithubLogin = async () => {
@@ -60,7 +48,7 @@ export const LoginView: React.FC<LoginViewProps> = ({ onBackToVisitor }) => {
           if (event.data && event.data.type === 'GITHUB_OAUTH_SUCCESS') {
             window.removeEventListener('message', listener);
             if (popup) popup.close();
-            // Automatically log in user as Admin Penuh demo
+            // Automatically log in user as Admin Penuh
             await login('dapurhafshawaty@gmail.com', 'password123');
             setLoading(false);
           }
@@ -86,17 +74,6 @@ export const LoginView: React.FC<LoginViewProps> = ({ onBackToVisitor }) => {
     <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center p-4">
       <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 space-y-6">
         <div className="text-center space-y-3 relative">
-          {onBackToVisitor && (
-            <button
-              onClick={onBackToVisitor}
-              className="absolute -top-2 left-0 text-slate-400 hover:text-white text-xs flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 rounded-lg transition"
-              title="Kembali ke Mode Pengunjung Website"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Pengunjung</span>
-            </button>
-          )}
-
           <img
             src={logoImg}
             alt="Badan Gizi Nasional Logo"
@@ -115,18 +92,18 @@ export const LoginView: React.FC<LoginViewProps> = ({ onBackToVisitor }) => {
         </div>
 
         {/* Security Banner */}
-        <div className="p-3 bg-blue-950/40 border border-blue-800/60 rounded-xl text-xs text-blue-200 flex items-start gap-2.5">
-          <ShieldCheck className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
+        <div className="p-3.5 bg-slate-800/80 border border-slate-700/80 rounded-xl text-xs text-slate-200 flex items-start gap-3">
+          <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
           <div className="space-y-0.5">
-            <div className="font-semibold text-blue-100">Keamanan Terpadu Email Terdaftar</div>
-            <p className="text-[11px] text-blue-300/90 leading-relaxed">
-              Pengunjung diarahkan ke menu login ini untuk memastikan setiap akses link terproteksi berdasarkan email terdaftar dan hak akses pengguna.
+            <div className="font-semibold text-white">Sistem Terproteksi Single Sign-On (SSO)</div>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Akses portal ini memerlukan autentikasi resmi. Silakan masukkan email terdaftar atau username SSO dan password Anda.
             </p>
           </div>
         </div>
 
         {error && (
-          <div className="p-3 bg-rose-950/50 border border-rose-800 text-rose-300 text-xs rounded-lg text-center font-medium">
+          <div className="p-3 bg-rose-950/60 border border-rose-800 text-rose-300 text-xs rounded-lg text-center font-medium">
             {error}
           </div>
         )}
@@ -140,28 +117,28 @@ export const LoginView: React.FC<LoginViewProps> = ({ onBackToVisitor }) => {
               value={usernameOrEmail}
               onChange={(e) => setUsernameOrEmail(e.target.value)}
               className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white font-mono placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
-              placeholder="contoh: dapurhafshawaty@gmail.com / admin.portal@instansi.go.id"
+              placeholder="Masukkan email terdaftar / username SSO..."
             />
           </div>
 
           <div>
-            <label className="block text-slate-300 font-medium mb-1">Password</label>
+            <label className="block text-slate-300 font-medium mb-1">Password SSO</label>
             <input
               type="password"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full p-2.5 bg-slate-800 border border-slate-700 rounded-lg text-white font-mono placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
-              placeholder="••••••••"
+              placeholder="Masukkan password SSO..."
             />
           </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg shadow-md transition flex items-center justify-center gap-2"
+            className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-lg shadow-md transition flex items-center justify-center gap-2 text-xs"
           >
-            <LogIn className="w-4 h-4" /> {loading ? 'Memverifikasi Akses Email...' : 'Masuk Portal Terpadu'}
+            <LogIn className="w-4 h-4" /> {loading ? 'Memverifikasi Akses SSO...' : 'Masuk Portal Terpadu'}
           </button>
 
           <div className="relative my-3 flex items-center justify-center">
@@ -181,79 +158,6 @@ export const LoginView: React.FC<LoginViewProps> = ({ onBackToVisitor }) => {
             Masuk dengan GitHub Account
           </button>
         </form>
-
-        <div className="pt-4 border-t border-slate-800 space-y-3">
-          <div className="text-[11px] text-slate-400 font-bold uppercase tracking-wider text-center">
-            Pilih Profil Hak Akses Pengguna (Demo Password: <code className="text-blue-400 font-mono">password123</code>)
-          </div>
-
-          <div className="grid grid-cols-1 gap-2 text-xs">
-            {/* Role 1: Admin Penuh */}
-            <button
-              onClick={() => handleQuickLogin('Admin Penuh', 'dapurhafshawaty@gmail.com')}
-              className="p-3 bg-rose-950/30 hover:bg-rose-900/50 border border-rose-800/60 rounded-xl text-left transition group flex items-center justify-between"
-            >
-              <div className="space-y-0.5">
-                <div className="font-bold text-rose-300 flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-rose-400" /> 1. Admin Penuh
-                  <span className="text-[10px] bg-rose-900/80 text-rose-200 px-1.5 py-0.2 rounded border border-rose-700">Akses Seluruh Fitur</span>
-                </div>
-                <div className="text-[11px] text-slate-400 font-mono">dapurhafshawaty@gmail.com</div>
-              </div>
-              <span className="text-[10px] text-rose-400 font-medium group-hover:translate-x-1 transition">Masuk &rarr;</span>
-            </button>
-
-            {/* Role 2: Staff Kantor */}
-            <button
-              onClick={() => handleQuickLogin('Staff Kantor', 'staff.kantor@instansi.go.id')}
-              className="p-3 bg-emerald-950/30 hover:bg-emerald-900/50 border border-emerald-800/60 rounded-xl text-left transition group flex items-center justify-between"
-            >
-              <div className="space-y-0.5">
-                <div className="font-bold text-emerald-300 flex items-center gap-1.5">
-                  <Mail className="w-4 h-4 text-emerald-400" /> 2. Staff Kantor
-                  <span className="text-[10px] bg-emerald-900/80 text-emerald-200 px-1.5 py-0.2 rounded border border-emerald-700">Dashboard, e-Surat & Stock</span>
-                </div>
-                <div className="text-[11px] text-slate-400 font-mono">staff.kantor@instansi.go.id</div>
-              </div>
-              <span className="text-[10px] text-emerald-400 font-medium group-hover:translate-x-1 transition">Masuk &rarr;</span>
-            </button>
-
-            {/* Role 3: Distribusi */}
-            <button
-              onClick={() => handleQuickLogin('Distribusi', 'distribusi@instansi.go.id')}
-              className="p-3 bg-sky-950/30 hover:bg-sky-900/50 border border-sky-800/60 rounded-xl text-left transition group flex items-center justify-between"
-            >
-              <div className="space-y-0.5">
-                <div className="font-bold text-sky-300 flex items-center gap-1.5">
-                  <Fuel className="w-4 h-4 text-sky-400" /> 3. Distribusi
-                  <span className="text-[10px] bg-sky-900/80 text-sky-200 px-1.5 py-0.2 rounded border border-sky-700">Dashboard & Laporan BBM</span>
-                </div>
-                <div className="text-[11px] text-slate-400 font-mono">distribusi@instansi.go.id</div>
-              </div>
-              <span className="text-[10px] text-sky-400 font-medium group-hover:translate-x-1 transition">Masuk &rarr;</span>
-            </button>
-          </div>
-
-          <div className="p-3 bg-slate-950/80 border border-slate-800 rounded-lg text-[11px] text-slate-400 space-y-1">
-            <div className="font-semibold text-slate-300 flex items-center gap-1.5">
-              <KeyRound className="w-3.5 h-3.5 text-amber-400" />
-              Info Kredensial SSO Terpadu
-            </div>
-            <p>
-              Gunakan email terdaftar atau username dengan Password default: <span className="font-mono text-white font-bold bg-slate-800 px-1 py-0.5 rounded">password123</span>
-            </p>
-          </div>
-
-          {onBackToVisitor && (
-            <button
-              onClick={onBackToVisitor}
-              className="w-full py-2 bg-slate-800/60 hover:bg-slate-800 text-amber-300 border border-slate-700/60 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition"
-            >
-              <Eye className="w-4 h-4 text-amber-400" />
-              Lihat Tampilan Pengunjung Website (Tanpa Login)
-            </button>
-          )}
-        </div>
       </div>
     </div>
   );
