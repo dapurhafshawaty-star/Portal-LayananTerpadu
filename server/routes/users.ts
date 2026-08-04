@@ -1,0 +1,82 @@
+import { Router, Request, Response } from 'express';
+import { dbStore } from '../db/store';
+import { User } from '../../src/types';
+
+const router = Router();
+
+// Get all users
+router.get('/', (req: Request, res: Response): void => {
+  res.json({ success: true, data: dbStore.users });
+});
+
+// Create user
+router.post('/', (req: Request, res: Response): void => {
+  const { nama, username, email, role, divisi, jabatan, status, foto } = req.body;
+
+  if (!nama || !username || !email || !role) {
+    res.status(400).json({ success: false, message: 'Nama, Username, Email, dan Role wajib diisi.' });
+    return;
+  }
+
+  const existing = dbStore.users.find(u => u.username === username || u.email === email);
+  if (existing) {
+    res.status(400).json({ success: false, message: 'Username atau Email sudah terdaftar.' });
+    return;
+  }
+
+  const newUser: User = {
+    id: `USR-${String(dbStore.users.length + 1).padStart(3, '0')}`,
+    nama,
+    username,
+    email,
+    role,
+    divisi: divisi || 'Sekretariat / Tata Usaha',
+    jabatan: jabatan || 'Staf Operasional',
+    status: status || 'Aktif',
+    foto: foto || `https://images.unsplash.com/photo-${1534528741775 + dbStore.users.length}?w=150`,
+    createdAt: new Date().toISOString()
+  };
+
+  dbStore.users.unshift(newUser);
+  dbStore.addLog('ADMIN', 'System Administrator', 'Master User', 'Tambah User Baru', `Menambahkan user '${nama}' dengan role '${role}'`, req.ip);
+
+  res.status(201).json({ success: true, message: 'User berhasil ditambahkan', data: newUser });
+});
+
+// Update user
+router.put('/:id', (req: Request, res: Response): void => {
+  const { id } = req.params;
+  const index = dbStore.users.findIndex(u => u.id === id);
+
+  if (index === -1) {
+    res.status(404).json({ success: false, message: 'User tidak ditemukan.' });
+    return;
+  }
+
+  dbStore.users[index] = {
+    ...dbStore.users[index],
+    ...req.body
+  };
+
+  dbStore.addLog('ADMIN', 'System Administrator', 'Master User', 'Update User Data', `Memperbarui data user ID ${id}`, req.ip);
+
+  res.json({ success: true, message: 'Data user berhasil diperbarui', data: dbStore.users[index] });
+});
+
+// Delete user
+router.delete('/:id', (req: Request, res: Response): void => {
+  const { id } = req.params;
+  const index = dbStore.users.findIndex(u => u.id === id);
+
+  if (index === -1) {
+    res.status(404).json({ success: false, message: 'User tidak ditemukan.' });
+    return;
+  }
+
+  const deletedUser = dbStore.users.splice(index, 1)[0];
+  dbStore.addLog('ADMIN', 'System Administrator', 'Master User', 'Hapus User', `Menghapus user '${deletedUser.nama}'`, req.ip);
+
+  res.json({ success: true, message: 'User berhasil dihapus', data: deletedUser });
+});
+
+export default router;

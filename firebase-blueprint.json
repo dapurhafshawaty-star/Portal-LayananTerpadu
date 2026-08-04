@@ -1,0 +1,18 @@
+{
+  "entities": {
+    "users": {
+      "title": "Users",
+      "description": "User profile data for SSO and access control",
+      "properties": {
+        "nama": { "type": "string" },
+        "username": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string" },
+        "divisi": { "type": "string" },
+        "jabatan": { "type": "string" },
+        "status": { "type": "string" }
+      },
+      "required": ["nama", "email", "role"]
+    }
+  }
+}

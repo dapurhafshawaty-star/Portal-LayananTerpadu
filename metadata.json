@@ -1,0 +1,8 @@
+{
+  "name": "Remix Portal LayananTerpadu",
+  "description": "Portal Administrasi Terpadu (Super App Enterprise) dengan SSO, Menu Dinamis, REST API, Master Data, Central Activity Log, dan Modul Terintegrasi e-Surat Digital \u0026 Stock Opname.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
