@@ -92,6 +92,31 @@ router.put('/kendaraan/:id', (req: Request, res: Response) => {
 });
 
 /**
+ * DELETE /api/v1/bbm/kendaraan/:id
+ * Delete master vehicle
+ */
+router.delete('/kendaraan/:id', (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const index = dbStore.kendaraan.findIndex(k => k.id === id);
+
+    if (index === -1) {
+      return res.status(404).json({ success: false, message: 'Kendaraan tidak ditemukan.' });
+    }
+
+    const removed = dbStore.kendaraan.splice(index, 1)[0];
+    dbStore.addLog('SYSTEM', 'Admin', 'Laporan BBM', 'Hapus Master Kendaraan', `Menghapus kendaraan ${removed.namaKendaraan} (${removed.platNomor})`);
+
+    res.json({
+      success: true,
+      message: 'Kendaraan berhasil dihapus.'
+    });
+  } catch (error: any) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+});
+
+/**
  * GET /api/v1/bbm/latest-km/:kendaraanId
  * Auto-get KM Awal from the latest KM Akhir for the specified vehicle
  */

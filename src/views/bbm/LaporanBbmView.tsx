@@ -17,6 +17,7 @@ import {
   XCircle, 
   Eye, 
   Trash2, 
+  Pencil,
   Upload, 
   X, 
   RefreshCw, 
@@ -65,6 +66,7 @@ export const LaporanBbmView: React.FC = () => {
   const [isPrintModalOpen, setIsPrintModalOpen] = useState<boolean>(false);
   const [selectedStrukUrl, setSelectedStrukUrl] = useState<string | null>(null);
   const [isKendaraanModalOpen, setIsKendaraanModalOpen] = useState<boolean>(false);
+  const [editingKendaraanId, setEditingKendaraanId] = useState<string | null>(null);
 
   // New BBM Form State
   const [formData, setFormData] = useState({
@@ -267,14 +269,18 @@ export const LaporanBbmView: React.FC = () => {
     if (!kendaraanFormData.namaKendaraan || !kendaraanFormData.platNomor) return;
 
     try {
-      const res = await fetch('/api/v1/bbm/kendaraan', {
-        method: 'POST',
+      const url = editingKendaraanId ? `/api/v1/bbm/kendaraan/${editingKendaraanId}` : '/api/v1/bbm/kendaraan';
+      const method = editingKendaraanId ? 'PUT' : 'POST';
+
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(kendaraanFormData)
       });
       const data = await res.json();
       if (data.success) {
         setIsKendaraanModalOpen(false);
+        setEditingKendaraanId(null);
         setKendaraanFormData({
           namaKendaraan: '',
           platNomor: '',
@@ -283,6 +289,37 @@ export const LaporanBbmView: React.FC = () => {
           status: 'Aktif'
         });
         fetchData();
+      } else {
+        alert(data.message || 'Gagal menyimpan data kendaraan.');
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  // Edit Master Kendaraan
+  const handleEditKendaraan = (knd: MasterKendaraan) => {
+    setEditingKendaraanId(knd.id);
+    setKendaraanFormData({
+      namaKendaraan: knd.namaKendaraan,
+      platNomor: knd.platNomor,
+      jenisKendaraan: knd.jenisKendaraan,
+      standarKmLiter: knd.standarKmLiter,
+      status: knd.status
+    });
+    setIsKendaraanModalOpen(true);
+  };
+
+  // Delete Master Kendaraan
+  const handleDeleteKendaraan = async (id: string, nama: string) => {
+    if (!window.confirm(`Apakah Anda yakin ingin menghapus armada ${nama}?`)) return;
+    try {
+      const res = await fetch(`/api/v1/bbm/kendaraan/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        fetchData();
+      } else {
+        alert(data.message || 'Gagal menghapus kendaraan.');
       }
     } catch (err) {
       console.error(err);
@@ -992,8 +1029,18 @@ export const LaporanBbmView: React.FC = () => {
             </div>
 
             <button
-              onClick={() => setIsKendaraanModalOpen(true)}
-              className="px-3.5 py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5"
+              onClick={() => {
+                setEditingKendaraanId(null);
+                setKendaraanFormData({
+                  namaKendaraan: '',
+                  platNomor: '',
+                  jenisKendaraan: 'Mobil Operasional',
+                  standarKmLiter: 10,
+                  status: 'Aktif'
+                });
+                setIsKendaraanModalOpen(true);
+              }}
+              className="px-3.5 py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer"
             >
               <Plus className="w-4 h-4" /> Tambah Kendaraan
             </button>
@@ -1009,13 +1056,15 @@ export const LaporanBbmView: React.FC = () => {
                   <div className="p-2.5 bg-sky-50 dark:bg-sky-950 text-sky-600 dark:text-sky-400 rounded-xl">
                     <Car className="w-5 h-5" />
                   </div>
-                  <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
-                    knd.status === 'Aktif' 
-                      ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300' 
-                      : 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300'
-                  }`}>
-                    {knd.status}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-0.5 text-[10px] font-bold rounded-full ${
+                      knd.status === 'Aktif' 
+                        ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300' 
+                        : 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300'
+                    }`}>
+                      {knd.status}
+                    </span>
+                  </div>
                 </div>
 
                 <div>
@@ -1025,14 +1074,35 @@ export const LaporanBbmView: React.FC = () => {
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <span className="text-[10px] text-slate-400">Jenis Armada:</span>
-                    <div className="font-medium">{knd.jenisKendaraan}</div>
+                <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-end justify-between">
+                  <div className="grid grid-cols-2 gap-2 text-xs flex-1">
+                    <div>
+                      <span className="text-[10px] text-slate-400">Jenis Armada:</span>
+                      <div className="font-medium">{knd.jenisKendaraan}</div>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400">Standar Konsumsi:</span>
+                      <div className="font-bold text-amber-600 dark:text-amber-400">{knd.standarKmLiter} KM / Liter</div>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-[10px] text-slate-400">Standar Konsumsi:</span>
-                    <div className="font-bold text-amber-600 dark:text-amber-400">{knd.standarKmLiter} KM / Liter</div>
+
+                  <div className="flex items-center gap-1.5 ml-2">
+                    <button
+                      onClick={() => handleEditKendaraan(knd)}
+                      className="px-2.5 py-1.5 bg-sky-50 dark:bg-sky-950/80 hover:bg-sky-100 dark:hover:bg-sky-900 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-800 rounded-lg text-xs font-bold flex items-center gap-1 transition cursor-pointer"
+                      title="Edit Kendaraan"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                      <span>Edit</span>
+                    </button>
+                    <button
+                      onClick={() => handleDeleteKendaraan(knd.id, knd.namaKendaraan)}
+                      className="px-2.5 py-1.5 bg-rose-50 dark:bg-rose-950/80 hover:bg-rose-100 dark:hover:bg-rose-900 text-rose-600 dark:text-rose-400 border border-rose-200 dark:border-rose-800 rounded-lg text-xs font-bold flex items-center gap-1 transition cursor-pointer"
+                      title="Hapus Kendaraan"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Hapus</span>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -1308,41 +1378,46 @@ export const LaporanBbmView: React.FC = () => {
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs z-50 flex items-center justify-center p-4">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
             <div className="px-5 py-3 bg-slate-900 text-white flex items-center justify-between font-bold text-sm">
-              <span className="flex items-center gap-2"><Car className="w-4 h-4 text-sky-400" /> Tambah Master Kendaraan</span>
-              <button onClick={() => setIsKendaraanModalOpen(false)}><X className="w-4 h-4" /></button>
+              <span className="flex items-center gap-2">
+                <Car className="w-4 h-4 text-sky-400" />
+                {editingKendaraanId ? 'Edit Master Kendaraan' : 'Tambah Master Kendaraan'}
+              </span>
+              <button type="button" onClick={() => setIsKendaraanModalOpen(false)} className="text-slate-400 hover:text-white cursor-pointer">
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
             <form onSubmit={handleSubmitKendaraan} className="p-5 space-y-3 text-xs">
               <div>
-                <label className="block font-semibold mb-1">Nama Kendaraan</label>
+                <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Nama Kendaraan</label>
                 <input
                   type="text"
                   placeholder="Contoh: Mobil Operasional Innova"
                   value={kendaraanFormData.namaKendaraan}
                   onChange={(e) => setKendaraanFormData(prev => ({ ...prev, namaKendaraan: e.target.value }))}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border rounded-xl"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl"
                   required
                 />
               </div>
 
               <div>
-                <label className="block font-semibold mb-1">Plat Nomor</label>
+                <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Plat Nomor</label>
                 <input
                   type="text"
                   placeholder="Contoh: B 1234 TIK"
                   value={kendaraanFormData.platNomor}
                   onChange={(e) => setKendaraanFormData(prev => ({ ...prev, platNomor: e.target.value }))}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border rounded-xl uppercase font-mono font-bold"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl uppercase font-mono font-bold"
                   required
                 />
               </div>
 
               <div>
-                <label className="block font-semibold mb-1">Jenis Armada</label>
+                <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Jenis Armada</label>
                 <select
                   value={kendaraanFormData.jenisKendaraan}
                   onChange={(e) => setKendaraanFormData(prev => ({ ...prev, jenisKendaraan: e.target.value as any }))}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border rounded-xl"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl"
                 >
                   <option value="Mobil Operasional">Mobil Operasional</option>
                   <option value="Mobil Box">Mobil Box</option>
@@ -1354,30 +1429,42 @@ export const LaporanBbmView: React.FC = () => {
               </div>
 
               <div>
-                <label className="block font-semibold mb-1">Standar Efisiensi (KM / Liter)</label>
+                <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Standar Efisiensi (KM / Liter)</label>
                 <input
                   type="number"
                   placeholder="Contoh: 12"
                   value={kendaraanFormData.standarKmLiter}
                   onChange={(e) => setKendaraanFormData(prev => ({ ...prev, standarKmLiter: Number(e.target.value) }))}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border rounded-xl font-bold"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl font-bold"
                   required
                 />
               </div>
 
-              <div className="pt-3 border-t flex justify-end gap-2">
+              <div>
+                <label className="block font-semibold mb-1 text-slate-700 dark:text-slate-300">Status Kendaraan</label>
+                <select
+                  value={kendaraanFormData.status}
+                  onChange={(e) => setKendaraanFormData(prev => ({ ...prev, status: e.target.value as any }))}
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl font-semibold"
+                >
+                  <option value="Aktif">Aktif</option>
+                  <option value="Non-Aktif">Non-Aktif / Servis</option>
+                </select>
+              </div>
+
+              <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setIsKendaraanModalOpen(false)}
-                  className="px-4 py-1.5 bg-slate-200 dark:bg-slate-800 font-bold rounded-xl"
+                  className="px-4 py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 font-bold rounded-xl cursor-pointer"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 bg-sky-600 text-white font-bold rounded-xl"
+                  className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white font-bold rounded-xl shadow-md transition cursor-pointer"
                 >
-                  Simpan Armada
+                  {editingKendaraanId ? 'Perbarui Armada' : 'Simpan Armada'}
                 </button>
               </div>
             </form>
