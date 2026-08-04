@@ -1,8 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { dbStore } from '../db/store';
 import { LaporanBbm, MasterKendaraan, JenisBbm } from '../../src/types';
+import { syncSaveDoc, syncDeleteDoc } from '../db/firestore';
 
 const router = Router();
+
 
 /**
  * GET /api/v1/bbm/kendaraan
@@ -45,6 +47,7 @@ router.post('/kendaraan', (req: Request, res: Response) => {
 
     dbStore.kendaraan.unshift(newKendaraan);
     dbStore.addLog('SYSTEM', 'Admin', 'Laporan BBM', 'Tambah Master Kendaraan', `Menambahkan kendaraan ${namaKendaraan} (${platNomor})`);
+    syncSaveDoc('kendaraan', newKendaraan.id, newKendaraan);
 
     res.status(201).json({
       success: true,
@@ -80,6 +83,7 @@ router.put('/kendaraan/:id', (req: Request, res: Response) => {
     };
 
     dbStore.addLog('SYSTEM', 'Admin', 'Laporan BBM', 'Update Master Kendaraan', `Memperbarui data kendaraan ${dbStore.kendaraan[index].namaKendaraan}`);
+    syncSaveDoc('kendaraan', id, dbStore.kendaraan[index]);
 
     res.json({
       success: true,
@@ -106,6 +110,7 @@ router.delete('/kendaraan/:id', (req: Request, res: Response) => {
 
     const removed = dbStore.kendaraan.splice(index, 1)[0];
     dbStore.addLog('SYSTEM', 'Admin', 'Laporan BBM', 'Hapus Master Kendaraan', `Menghapus kendaraan ${removed.namaKendaraan} (${removed.platNomor})`);
+    syncDeleteDoc('kendaraan', id);
 
     res.json({
       success: true,
@@ -407,6 +412,7 @@ router.post('/', (req: Request, res: Response) => {
     };
 
     dbStore.laporanBbm.unshift(newLog);
+    syncSaveDoc('laporanBbm', newLog.id, newLog);
 
     // Logging & Notification
     dbStore.addLog(
@@ -451,6 +457,7 @@ router.delete('/:id', (req: Request, res: Response) => {
 
     const deleted = dbStore.laporanBbm.splice(index, 1)[0];
     dbStore.addLog('SYSTEM', 'Admin', 'Laporan BBM', 'Hapus Transaksi BBM', `Menghapus transaksi ${deleted.id} untuk ${deleted.kendaraanNama}`);
+    syncDeleteDoc('laporanBbm', id);
 
     res.json({
       success: true,

@@ -16,10 +16,14 @@ import searchRoutes from './server/routes/search';
 import settingRoutes from './server/routes/settings';
 import bbmRoutes from './server/routes/bbm';
 import { swaggerSpec } from './server/docs/swagger';
+import { initFirestoreSync, getCloudInfo } from './server/db/firestore';
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
+
+  // Initialize Google Cloud Firestore Realtime Synchronization
+  initFirestoreSync().catch(err => console.error('Firestore initialization warning:', err));
 
   // Middleware
   app.use(cors());
@@ -33,6 +37,14 @@ async function startServer() {
       appName: 'Portal Administrasi Terpadu',
       version: '2026.1.0-Enterprise',
       timestamp: new Date().toISOString()
+    });
+  });
+
+  // Google Cloud Database Realtime Status Endpoint
+  app.get('/api/v1/cloud/status', (req: Request, res: Response) => {
+    res.json({
+      success: true,
+      cloud: getCloudInfo()
     });
   });
 
@@ -54,6 +66,7 @@ async function startServer() {
   app.use('/api/v1/search', searchRoutes);
   app.use('/api/v1/settings', settingRoutes);
   app.use('/api/v1/bbm', bbmRoutes);
+
 
   // Development vs Production Environment Setup
   if (process.env.NODE_ENV !== 'production') {

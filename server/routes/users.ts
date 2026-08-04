@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { dbStore } from '../db/store';
 import { User } from '../../src/types';
+import { syncSaveDoc, syncDeleteDoc } from '../db/firestore';
 
 const router = Router();
 
@@ -11,7 +12,7 @@ router.get('/', (req: Request, res: Response): void => {
 
 // Create user
 router.post('/', (req: Request, res: Response): void => {
-  const { nama, username, email, role, divisi, jabatan, status, foto, password } = req.body;
+  const { nama, username, email, role, divisi, jabatan, status, foto, password, nip, telepon } = req.body;
 
   if (!nama || !username || !email || !role) {
     res.status(400).json({ success: false, message: 'Nama, Username, Email, dan Role wajib diisi.' });
@@ -38,8 +39,14 @@ router.post('/', (req: Request, res: Response): void => {
     createdAt: new Date().toISOString()
   };
 
+  if (nip) (newUser as any).nip = nip;
+  if (telepon) (newUser as any).telepon = telepon;
+
   dbStore.users.unshift(newUser);
   dbStore.addLog('ADMIN', 'System Administrator', 'Master User', 'Tambah User Baru', `Menambahkan user '${nama}' dengan role '${role}' dan password kustom`, req.ip);
+
+  // Sync to Firestore
+  syncSaveDoc('users', newUser.id, newUser);
 
   res.status(201).json({ success: true, message: 'User berhasil ditambahkan dengan password SSO', data: newUser });
 });
@@ -67,6 +74,9 @@ router.put('/:id', (req: Request, res: Response): void => {
 
   dbStore.addLog('ADMIN', 'System Administrator', 'Master User', 'Update User Data', `Memperbarui data/password user ID ${id}`, req.ip);
 
+  // Sync to Firestore
+  syncSaveDoc('users', id, dbStore.users[index]);
+
   res.json({ success: true, message: 'Data user berhasil diperbarui', data: dbStore.users[index] });
 });
 
@@ -89,6 +99,9 @@ router.post('/:id/reset-password', (req: Request, res: Response): void => {
   user.password = newPassword.trim();
   dbStore.addLog('ADMIN', 'System Administrator', 'Master User', 'Reset Password User', `Mereset password SSO untuk user '${user.nama}' (@${user.username})`, req.ip);
 
+  // Sync to Firestore
+  syncSaveDoc('users', id, user);
+
   res.json({ success: true, message: `Password SSO user ${user.nama} berhasil direset.` });
 });
 
@@ -105,7 +118,11 @@ router.delete('/:id', (req: Request, res: Response): void => {
   const deletedUser = dbStore.users.splice(index, 1)[0];
   dbStore.addLog('ADMIN', 'System Administrator', 'Master User', 'Hapus User', `Menghapus user '${deletedUser.nama}'`, req.ip);
 
+  // Sync to Firestore
+  syncDeleteDoc('users', id);
+
   res.json({ success: true, message: 'User berhasil dihapus', data: deletedUser });
 });
 
 export default router;
+

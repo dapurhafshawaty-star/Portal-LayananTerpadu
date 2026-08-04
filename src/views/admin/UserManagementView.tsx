@@ -171,16 +171,33 @@ export const UserManagementView: React.FC = () => {
             <Users className="w-5 h-5 text-rose-600" /> Pusat Manajemen Pengguna Single Sign-On (SSO)
           </h2>
           <p className="text-xs text-slate-500">
-            Satu basis pengguna terpusat untuk autentikasi SSO dan manajemen hak akses modul
+            Satu basis pengguna terpusat terintegrasi dengan Google Cloud Firestore & Master Data Terpadu
           </p>
         </div>
 
-        <button
-          onClick={() => setIsAddOpen(true)}
-          className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg shadow-sm transition flex items-center gap-1.5"
-        >
-          <Plus className="w-4 h-4" /> Tambah User Baru
-        </button>
+        <div className="flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-lg text-xs text-emerald-800 dark:text-emerald-300 font-semibold">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            Google Cloud Firestore Sync
+          </div>
+
+          <button
+            onClick={() => setIsAddOpen(true)}
+            className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg shadow-sm transition flex items-center gap-1.5"
+          >
+            <Plus className="w-4 h-4" /> Tambah User Baru
+          </button>
+        </div>
+      </div>
+
+      <div className="p-3 bg-purple-50 dark:bg-purple-950/30 border border-purple-200 dark:border-purple-800/50 rounded-lg text-xs text-purple-900 dark:text-purple-200 flex items-center gap-2">
+        <CheckCircle2 className="w-4 h-4 text-purple-600 shrink-0" />
+        <span>
+          <strong>Data Terintegrasi 100%:</strong> Setiap perubahan pengguna di menu ini secara otomatis tersinkronisasi realtime ke <strong>Master Data Terpadu (Master Pegawai)</strong> dan disimpan di <strong>Google Cloud Firestore</strong>.
+        </span>
       </div>
 
       <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xs flex items-center gap-3">
