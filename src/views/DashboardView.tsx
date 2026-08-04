@@ -20,7 +20,10 @@ import {
   Fuel,
   LogIn,
   Eye,
-  ShieldCheck
+  ShieldCheck,
+  MessageSquare,
+  Send,
+  MessageCircle
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Badge } from '../components/common/Badge';
@@ -53,12 +56,44 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
     ]
   });
 
-  const [reminders, setReminders] = useState([
-    { id: 1, text: 'Rapat Koordinasi SSO & API Gateway (Kemenkeu)', date: '2026-08-03 09:00', done: false, priority: 'High' },
-    { id: 2, text: 'Audit Physical Stock Opname Gudang Central', date: '2026-08-05 13:00', done: false, priority: 'Medium' },
-    { id: 3, text: 'Verifikasi Disposisi Surat 102/KEMENKEU/07/2026', date: '2026-08-02 16:00', done: true, priority: 'High' }
+  interface FeedbackItem {
+    id: number;
+    nama: string;
+    kategori: 'Saran' | 'Kritik' | 'Apresiasi';
+    pesan: string;
+    tanggal: string;
+    status: 'Ditinjau' | 'Direspon' | 'Terakomodasi';
+  }
+
+  const [feedbacks, setFeedbacks] = useState<FeedbackItem[]>([
+    {
+      id: 1,
+      nama: 'Ahmad Subagja (Staff Logistik)',
+      kategori: 'Saran',
+      pesan: 'Mohon tambahkan pemindaian kode QR otomatis untuk stok opname gudang.',
+      tanggal: '2026-08-04 10:15',
+      status: 'Terakomodasi'
+    },
+    {
+      id: 2,
+      nama: 'Siti Rahma (Distribusi BBM)',
+      kategori: 'Kritik',
+      pesan: 'Kecepatan pemrosesan disposisi surat digital pada jam sibuk perlu ditingkatkan.',
+      tanggal: '2026-08-03 14:30',
+      status: 'Direspon'
+    },
+    {
+      id: 3,
+      nama: 'Pengunjung Portal',
+      kategori: 'Apresiasi',
+      pesan: 'Tampilan antarmuka sangat bersih, modern, dan mempermudah pencarian arsip.',
+      tanggal: '2026-08-02 09:00',
+      status: 'Ditinjau'
+    }
   ]);
-  const [newReminderText, setNewReminderText] = useState('');
+  const [newPesan, setNewPesan] = useState('');
+  const [newKategori, setNewKategori] = useState<'Saran' | 'Kritik' | 'Apresiasi'>('Saran');
+  const [newNama, setNewNama] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -81,24 +116,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
     fetchData();
   }, []);
 
-  const addReminder = (e: React.FormEvent) => {
+  const addFeedback = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newReminderText.trim()) return;
-    setReminders([
-      ...reminders,
-      {
-        id: Date.now(),
-        text: newReminderText,
-        date: new Date().toISOString().replace('T', ' ').slice(0, 16),
-        done: false,
-        priority: 'Normal'
-      }
-    ]);
-    setNewReminderText('');
-  };
-
-  const toggleReminder = (id: number) => {
-    setReminders(reminders.map(r => r.id === id ? { ...r, done: !r.done } : r));
+    if (!newPesan.trim()) return;
+    const author = newNama.trim() || (user ? `${user.nama} (${user.role})` : 'Pengunjung Portal');
+    const newItem: FeedbackItem = {
+      id: Date.now(),
+      nama: author,
+      kategori: newKategori,
+      pesan: newPesan.trim(),
+      tanggal: new Date().toISOString().replace('T', ' ').slice(0, 16),
+      status: 'Ditinjau'
+    };
+    setFeedbacks([newItem, ...feedbacks]);
+    setNewPesan('');
+    setNewNama('');
   };
 
   return (
@@ -506,49 +538,94 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
 
         {/* Right Sidebar: Recent Activity & Reminders Widget */}
         <div className="space-y-6">
-          {/* Calendar & Reminder Widget */}
+          {/* Saran dan Kritik Widget */}
           <div className="p-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-blue-600" /> Agenda & Reminder
+                <MessageSquare className="w-4 h-4 text-blue-600 dark:text-blue-400" /> Saran dan Kritik
               </h3>
-              <span className="text-[10px] text-slate-400">Juli / Agustus 2026</span>
+              <span className="text-[10px] bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 font-semibold px-2 py-0.5 rounded-full border border-blue-200 dark:border-blue-800">
+                {feedbacks.length} Masukan
+              </span>
             </div>
 
-            <form onSubmit={addReminder} className="flex gap-2">
-              <input
-                type="text"
-                placeholder="Tambah pengingat agenda..."
-                value={newReminderText}
-                onChange={(e) => setNewReminderText(e.target.value)}
-                className="flex-1 px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-              <button type="submit" className="px-3 py-1.5 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700">
-                +
-              </button>
+            {/* Form Input Saran & Kritik */}
+            <form onSubmit={addFeedback} className="space-y-2.5">
+              {!user && (
+                <input
+                  type="text"
+                  placeholder="Nama Anda (Opsional)..."
+                  value={newNama}
+                  onChange={(e) => setNewNama(e.target.value)}
+                  className="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 text-slate-900 dark:text-slate-100"
+                />
+              )}
+              <div className="flex gap-2">
+                <select
+                  value={newKategori}
+                  onChange={(e) => setNewKategori(e.target.value as any)}
+                  className="px-2 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 text-slate-700 dark:text-slate-300 font-medium shrink-0"
+                >
+                  <option value="Saran">Saran</option>
+                  <option value="Kritik">Kritik</option>
+                  <option value="Apresiasi">Apresiasi</option>
+                </select>
+                <input
+                  type="text"
+                  placeholder="Masukkan saran & kritik Anda..."
+                  value={newPesan}
+                  onChange={(e) => setNewPesan(e.target.value)}
+                  className="flex-1 px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 text-slate-900 dark:text-slate-100"
+                />
+                <button
+                  type="submit"
+                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-lg shadow-sm transition shrink-0 flex items-center gap-1"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Kirim</span>
+                </button>
+              </div>
             </form>
 
-            <div className="space-y-2">
-              {reminders.map((r) => (
+            {/* List Saran & Kritik */}
+            <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
+              {feedbacks.map((item) => (
                 <div
-                  key={r.id}
-                  onClick={() => toggleReminder(r.id)}
-                  className={`p-2.5 rounded-lg border transition cursor-pointer flex items-start gap-2.5 text-xs ${
-                    r.done
-                      ? 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 text-slate-400 line-through'
-                      : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200'
-                  }`}
+                  key={item.id}
+                  className="p-3 rounded-lg border bg-slate-50 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700/70 text-xs space-y-1.5"
                 >
-                  <div className={`mt-0.5 w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
-                    r.done ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-400'
-                  }`}>
-                    {r.done && <Check className="w-3 h-3" />}
-                  </div>
-                  <div className="flex-1">
-                    <div>{r.text}</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5 flex items-center gap-1">
-                      <Clock className="w-3 h-3" /> {r.date}
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-0.5 text-[9px] font-bold rounded uppercase ${
+                        item.kategori === 'Saran'
+                          ? 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 border border-blue-200 dark:border-blue-800'
+                          : item.kategori === 'Kritik'
+                          ? 'bg-rose-100 text-rose-700 dark:bg-rose-950 dark:text-rose-300 border border-rose-200 dark:border-rose-800'
+                          : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
+                      }`}>
+                        {item.kategori}
+                      </span>
+                      <span className="font-semibold text-slate-800 dark:text-slate-200 truncate max-w-[150px]">
+                        {item.nama}
+                      </span>
                     </div>
+                    <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded ${
+                      item.status === 'Terakomodasi'
+                        ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400'
+                        : item.status === 'Direspon'
+                        ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400'
+                        : 'bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400'
+                    }`}>
+                      {item.status}
+                    </span>
+                  </div>
+                  <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-[11px]">
+                    "{item.pesan}"
+                  </p>
+                  <div className="text-[10px] text-slate-400 flex items-center justify-between pt-1 border-t border-slate-200/50 dark:border-slate-700/50">
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> {item.tanggal}
+                    </span>
                   </div>
                 </div>
               ))}
