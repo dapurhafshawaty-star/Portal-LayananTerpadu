@@ -5,9 +5,10 @@ import logoImg from '../../assets/images/badan_gizi_logo_1785799692960.jpg';
 
 interface LoginViewProps {
   onBackToVisitor?: () => void;
+  onLoginSuccess?: () => void;
 }
 
-export const LoginView: React.FC<LoginViewProps> = ({ onBackToVisitor }) => {
+export const LoginView: React.FC<LoginViewProps> = ({ onBackToVisitor, onLoginSuccess }) => {
   const { login } = useAuth();
   const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,11 +17,17 @@ export const LoginView: React.FC<LoginViewProps> = ({ onBackToVisitor }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!usernameOrEmail.trim() || !password) {
+      setError('Email/Username dan Password wajib diisi.');
+      return;
+    }
     setError('');
     setLoading(true);
     try {
-      const success = await login(usernameOrEmail, password);
-      if (!success) {
+      const success = await login(usernameOrEmail.trim(), password);
+      if (success) {
+        onLoginSuccess?.();
+      } else {
         setError('Email/Username atau password tidak sesuai.');
       }
     } catch (err) {
@@ -53,7 +60,8 @@ export const LoginView: React.FC<LoginViewProps> = ({ onBackToVisitor }) => {
             window.removeEventListener('message', listener);
             if (popup) popup.close();
             // Automatically log in user as Admin Penuh
-            await login('dapurhafshawaty@gmail.com', 'password123');
+            const success = await login('dapurhafshawaty@gmail.com', 'password123');
+            if (success) onLoginSuccess?.();
             setLoading(false);
           }
         };
@@ -155,47 +163,6 @@ export const LoginView: React.FC<LoginViewProps> = ({ onBackToVisitor }) => {
           >
             <LogIn className="w-4 h-4" /> {loading ? 'Memverifikasi Akses SSO...' : 'Masuk Portal Terpadu'}
           </button>
-
-          {/* Akses Cepat Admin Penuh */}
-          <div className="p-3.5 bg-gradient-to-r from-amber-950/40 via-amber-900/30 to-amber-950/40 border border-amber-800/60 rounded-xl space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-amber-300 font-bold text-xs">
-                <ShieldCheck className="w-4 h-4 text-amber-400" />
-                <span>Akses Login Cepat: Admin Penuh</span>
-              </div>
-              <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded border border-amber-500/30 font-mono">
-                Role: Admin Penuh
-              </span>
-            </div>
-            
-            <p className="text-[11px] text-slate-300 leading-relaxed">
-              Email: <code className="text-amber-200 font-mono font-semibold bg-slate-900/80 px-1.5 py-0.5 rounded border border-slate-700">dapurhafshawaty@gmail.com</code> <br />
-              Password: <code className="text-amber-200 font-mono font-semibold bg-slate-900/80 px-1.5 py-0.5 rounded border border-slate-700">password123</code>
-            </p>
-
-            <button
-              type="button"
-              disabled={loading}
-              onClick={async () => {
-                setLoading(true);
-                setError('');
-                try {
-                  const success = await login('dapurhafshawaty@gmail.com', 'password123');
-                  if (!success) {
-                    setError('Gagal masuk sebagai Admin Penuh');
-                  }
-                } catch (err) {
-                  setError('Terjadi kesalahan saat login Admin Penuh');
-                } finally {
-                  setLoading(false);
-                }
-              }}
-              className="w-full py-2 bg-amber-600 hover:bg-amber-500 text-slate-950 font-bold rounded-lg shadow transition flex items-center justify-center gap-2 text-xs cursor-pointer"
-            >
-              <LogIn className="w-4 h-4 text-slate-950" />
-              <span>Masuk Sekarang Sebagai Admin Penuh (1-Click)</span>
-            </button>
-          </div>
 
           <div className="relative my-3 flex items-center justify-center">
             <div className="border-t border-slate-800 w-full"></div>

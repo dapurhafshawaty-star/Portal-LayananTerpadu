@@ -46,6 +46,13 @@ const PortalMain: React.FC = () => {
     });
   };
 
+  // Auto-redirect to dashboard if user is authenticated while on /login
+  React.useEffect(() => {
+    if (user && currentPath === '/login') {
+      setCurrentPath('/dashboard');
+    }
+  }, [user, currentPath]);
+
   if (isAuthLoading) {
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white">
@@ -57,9 +64,14 @@ const PortalMain: React.FC = () => {
     );
   }
 
-  // If explicit login path requested, show LoginView
-  if (currentPath === '/login') {
-    return <LoginView onBackToVisitor={() => setCurrentPath('/dashboard')} />;
+  // If explicit login path requested and user is NOT authenticated, show LoginView
+  if (currentPath === '/login' && !user) {
+    return (
+      <LoginView
+        onBackToVisitor={() => setCurrentPath('/dashboard')}
+        onLoginSuccess={() => setCurrentPath('/dashboard')}
+      />
+    );
   }
 
   const checkAccess = (path: string): boolean => {
