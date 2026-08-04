@@ -57,9 +57,9 @@ const PortalMain: React.FC = () => {
     );
   }
 
-  // If not authenticated, require login immediately (no open visitor bypass)
-  if (!user || currentPath === '/login') {
-    return <LoginView />;
+  // If explicit login path requested, show LoginView
+  if (currentPath === '/login') {
+    return <LoginView onBackToVisitor={() => setCurrentPath('/dashboard')} />;
   }
 
   const checkAccess = (path: string): boolean => {

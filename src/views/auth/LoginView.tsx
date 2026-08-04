@@ -1,9 +1,13 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { ShieldCheck, LogIn } from 'lucide-react';
+import { ShieldCheck, LogIn, ArrowLeft, Eye } from 'lucide-react';
 import logoImg from '../../assets/images/badan_gizi_logo_1785799692960.jpg';
 
-export const LoginView: React.FC = () => {
+interface LoginViewProps {
+  onBackToVisitor?: () => void;
+}
+
+export const LoginView: React.FC<LoginViewProps> = ({ onBackToVisitor }) => {
   const { login } = useAuth();
   const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -74,6 +78,17 @@ export const LoginView: React.FC = () => {
     <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center p-4">
       <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 space-y-6">
         <div className="text-center space-y-3 relative">
+          {onBackToVisitor && (
+            <button
+              onClick={onBackToVisitor}
+              className="absolute -top-2 left-0 text-slate-400 hover:text-white text-xs flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 rounded-lg transition"
+              title="Kembali ke Mode Pengunjung"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Mode Pengunjung</span>
+            </button>
+          )}
+
           <img
             src={logoImg}
             alt="Badan Gizi Nasional Logo"
@@ -157,6 +172,19 @@ export const LoginView: React.FC = () => {
             </svg>
             Masuk dengan GitHub Account
           </button>
+
+          {onBackToVisitor && (
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={onBackToVisitor}
+                className="w-full py-2 bg-slate-800/60 hover:bg-slate-800 text-amber-300 border border-slate-700/60 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer"
+              >
+                <Eye className="w-4 h-4 text-amber-400" />
+                <span>Lihat Tampilan Mode Pengunjung Website</span>
+              </button>
+            </div>
+          )}
         </form>
       </div>
     </div>
