@@ -85,16 +85,18 @@ export const LoginView: React.FC<LoginViewProps> = ({ onBackToVisitor, onLoginSu
   return (
     <div className="min-h-screen bg-slate-950 flex flex-col justify-center items-center p-4">
       <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-6 sm:p-8 space-y-6">
-        <div className="text-center space-y-3 relative">
+        <div className="text-center space-y-3">
           {onBackToVisitor && (
-            <button
-              onClick={onBackToVisitor}
-              className="absolute -top-2 left-0 text-slate-400 hover:text-white text-xs flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 rounded-lg transition"
-              title="Kembali ke Mode Pengunjung"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Mode Pengunjung</span>
-            </button>
+            <div className="flex justify-start">
+              <button
+                onClick={onBackToVisitor}
+                className="text-slate-400 hover:text-white text-xs flex items-center gap-1.5 px-2.5 py-1.5 bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 rounded-lg transition"
+                title="Kembali ke Mode Pengunjung"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Mode Pengunjung</span>
+              </button>
+            </div>
           )}
 
           <img

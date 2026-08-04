@@ -386,16 +386,16 @@ export const LaporanBbmView: React.FC = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-2 shrink-0 flex-wrap sm:flex-nowrap">
             <button
               onClick={() => setIsAddModalOpen(true)}
-              className="px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2"
+              className="px-4 py-2.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs rounded-xl shadow-md transition flex items-center gap-2 cursor-pointer"
             >
               <Plus className="w-4 h-4" /> Tambah Transaksi BBM
             </button>
             <button
               onClick={() => setIsPrintModalOpen(true)}
-              className="px-3.5 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-semibold text-xs rounded-xl transition flex items-center gap-2"
+              className="px-3.5 py-2.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-semibold text-xs rounded-xl transition flex items-center gap-2 cursor-pointer"
             >
               <Printer className="w-4 h-4 text-sky-300" /> Print Laporan
             </button>
@@ -403,7 +403,7 @@ export const LaporanBbmView: React.FC = () => {
         </div>
 
         {/* Tab Selection Navigation */}
-        <div className="flex items-center gap-2 mt-6 pt-4 border-t border-sky-800/80">
+        <div className="flex items-center gap-2 mt-6 pt-4 border-t border-sky-800/80 overflow-x-auto pb-1">
           <button
             onClick={() => setActiveTab('dashboard')}
             className={`px-4 py-2 rounded-lg text-xs font-bold transition flex items-center gap-2 ${

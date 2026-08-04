@@ -50,10 +50,10 @@ export const Header: React.FC<HeaderProps> = ({
               referrerPolicy="no-referrer"
             />
             <div>
-              <h1 className="text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
+              <h1 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition truncate max-w-[130px] min-[400px]:max-w-[200px] sm:max-w-none">
                 {settings.namaPortal || 'Portal Administrasi Terpadu'}
               </h1>
-              <span className="text-[10px] text-slate-400 font-medium tracking-wider uppercase">
+              <span className="text-[9px] sm:text-[10px] text-slate-400 font-medium tracking-wider uppercase block truncate">
                 Badan Gizi Nasional RI
               </span>
             </div>
